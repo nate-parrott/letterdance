@@ -137,7 +137,7 @@
 					cloned.style.left = '0px';
 					cloned.style.top = '0px';
 					setTimeout(function() {
-						cloned.style.transition = 'transform 0.15s ease-out'; // wait for initial layout before applying transition
+						cloned.style.transition = 'transform 0.5s ease-in-out, opacity 0.5s ease-in-out'; // wait for initial layout before applying transition
 					}, 0)
 					self.overlay.appendChild(cloned);
 					cloneLetterNodes.push(cloned);
@@ -161,6 +161,8 @@
 					if (cur.opacity == 0) {
 						cur.left = next.left;
 						cur.top = next.top;
+						cur.width = next.width;
+						cur.height = next.height;
 					}
 				}
 			}
@@ -172,6 +174,8 @@
 					if (next.opacity == 0) {
 						next.left = cur.left;
 						next.top = cur.top;
+						next.width = cur.width;
+						next.height = cur.height;
 					}
 				}
 			}
@@ -222,7 +226,7 @@
 				seenLetterCounts[letter] = seenCount + 1;
 				
 				if (seenCount >= (instances[letter] || []).length) {
-					positions.push({left: 0, top: 0, opacity: 0});
+					positions.push({left: 0, top: 0, opacity: 0, width: 0, height: 0});
 				} else {
 					var pos = getPos(instances[letter][seenCount]);
 					positions.push({left: pos.left - pageOffset.left, top: pos.top - pageOffset.top, width: pos.width, height: pos.height, opacity: 1});
@@ -239,10 +243,10 @@
 				var pos = positions[i];
 				// letterClone.style.left = pos.left + nodeOffset.left + 'px';
 				// letterClone.style.top = pos.top + nodeOffset.top + 'px';
-				var x = (pos.left + nodeOffset.left);
-				var y = (pos.top + nodeOffset.top);
+				var x = parseInt(pos.left + nodeOffset.left);
+				var y = parseInt(pos.top + nodeOffset.top);
 				var rotate = pos.rotation || 0;
-				letterClone.style.transform = 'translate3d(' + x + 'px, ' + y + 'px, 0) rotate(' + rotate + 'deg)';
+				letterClone.style.transform = 'translate3d(' + x + 'px, ' + y + 'px, 0px) rotate(' + rotate + 'deg)';
 				letterClone.style.opacity = pos.opacity;
 				
 			}
@@ -283,16 +287,15 @@
 			return out;
 		}
 		
-		self.pageCenterYs = function() {
+		self.pageYs = function() {
 			return self.pages.map(function(page) {
-				var b = getPos(page);
-				return b.top + b.height / 2;
+				return getPos(page).top;
 			})
 		}
 		
 		self.layout = function() {			
-			var y = window.innerHeight/2 + window.pageYOffset;
-			var pageYs = self.pageCenterYs();
+			var y = window.pageYOffset;
+			var pageYs = self.pageYs();
 			var lastPageBefore = 0;
 			var firstPageAfter = null;
 			for (var i=0; i<pageYs.length; i++) {
