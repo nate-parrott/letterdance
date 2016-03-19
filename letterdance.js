@@ -238,7 +238,7 @@
 				// letterClone.style.top = pos.top + nodeOffset.top + 'px';
 				var x = (pos.left + nodeOffset.left);
 				var y = (pos.top + nodeOffset.top);
-				var rotate = 0;
+				var rotate = pos.rotation || 0;
 				letterClone.style.transform = 'translate3d(' + x + 'px, ' + y + 'px, 0) rotate(' + rotate + 'deg)';
 				letterClone.style.opacity = pos.opacity;
 				
@@ -269,7 +269,13 @@
 			for (var i=0; i<pos1.length; i++) {
 				var p1 = pos1[i];
 				var p2 = pos2[i];
-				out.push({left: lerp(p1.left, p2.left, t), top: lerp(p1.top, p2.top, t), opacity: lerp(p1.opacity, p2.opacity, t)});
+				
+				var rotation = t * (1 - t) * 40;
+				if (p1.movingLeft) rotation *= -1
+				else if (p1.movingRight) rotation *= 1
+				else rotation = 0;
+				
+				out.push({left: lerp(p1.left, p2.left, t), top: lerp(p1.top, p2.top, t), opacity: lerp(p1.opacity, p2.opacity, t), rotation: rotation});
 			}
 			return out;
 		}
