@@ -136,6 +136,9 @@
 					cloned.style.display = 'block';
 					cloned.style.left = '0px';
 					cloned.style.top = '0px';
+					setTimeout(function() {
+						cloned.style.transition = 'transform 0.05s linear'; // wait for initial layout before applying transition
+					}, 0)
 					self.overlay.appendChild(cloned);
 					cloneLetterNodes.push(cloned);
 				}
