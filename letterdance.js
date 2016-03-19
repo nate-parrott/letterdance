@@ -1,5 +1,5 @@
 (function() {
-	var FRACTION_OF_SCROLL_THAT_IS_PAGE_TRANSITION = 0.7;
+	var FRACTION_OF_SCROLL_THAT_IS_PAGE_TRANSITION = 0.2;
 	var ORIGINAL_CONTENT_OPACITY = 0;
 	
 	var TEXT_NODE = 3;
@@ -137,7 +137,7 @@
 					cloned.style.left = '0px';
 					cloned.style.top = '0px';
 					setTimeout(function() {
-						cloned.style.transition = 'transform 0.05s linear'; // wait for initial layout before applying transition
+						cloned.style.transition = 'transform 0.15s ease-out'; // wait for initial layout before applying transition
 					}, 0)
 					self.overlay.appendChild(cloned);
 					cloneLetterNodes.push(cloned);
