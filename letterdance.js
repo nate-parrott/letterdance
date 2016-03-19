@@ -1,5 +1,5 @@
 (function() {
-	var FRACTION_OF_SCROLL_THAT_IS_PAGE_TRANSITION = 0.65;
+	var FRACTION_OF_SCROLL_THAT_IS_PAGE_TRANSITION = 0.7;
 	var ORIGINAL_CONTENT_OPACITY = 0;
 	
 	var TEXT_NODE = 3;
@@ -136,6 +136,9 @@
 					cloned.style.display = 'block';
 					cloned.style.left = '0px';
 					cloned.style.top = '0px';
+					setTimeout(function() {
+						cloned.style.transition = 'transform 0.05s linear'; // wait for initial layout before applying transition
+					}, 0)
 					self.overlay.appendChild(cloned);
 					cloneLetterNodes.push(cloned);
 				}
@@ -172,6 +175,23 @@
 					}
 				}
 			}
+			// compute transition effects:
+			for (var i=0; i<self.letterPositions.length-1; i++) {
+				for (var j=0; j<self.letterPositions[i].length; j++) {
+					var cur = self.letterPositions[i][j];
+					var next = self.letterPositions[i+1][j];
+					if (next.opacity == 0) {
+						next.top -= cur.height;
+					} else if (cur.opacity == 0 && next.opacity == 1) {
+						cur.top += next.height;
+					}
+					if (next.left > cur.left) {
+						cur.movingRight = true;
+					} else if (next.left < cur.left) {
+						cur.movingLeft = true;
+					}
+				}
+			}
 		}
 		
 		self.getLetterPositions = function(pageIdx) {
@@ -205,7 +225,7 @@
 					positions.push({left: 0, top: 0, opacity: 0});
 				} else {
 					var pos = getPos(instances[letter][seenCount]);
-					positions.push({left: pos.left - pageOffset.left, top: pos.top - pageOffset.top, opacity: 1});
+					positions.push({left: pos.left - pageOffset.left, top: pos.top - pageOffset.top, width: pos.width, height: pos.height, opacity: 1});
 				}
 			}
 			
@@ -217,8 +237,12 @@
 			for (var i=0; i<positions.length; i++) {
 				var letterClone = self.cloneLetterNodes[i];
 				var pos = positions[i];
-				letterClone.style.left = pos.left + nodeOffset.left + 'px';
-				letterClone.style.top = pos.top + nodeOffset.top + 'px';
+				// letterClone.style.left = pos.left + nodeOffset.left + 'px';
+				// letterClone.style.top = pos.top + nodeOffset.top + 'px';
+				var x = (pos.left + nodeOffset.left);
+				var y = (pos.top + nodeOffset.top);
+				var rotate = pos.rotation || 0;
+				letterClone.style.transform = 'translate3d(' + x + 'px, ' + y + 'px, 0) rotate(' + rotate + 'deg)';
 				letterClone.style.opacity = pos.opacity;
 				
 			}
@@ -248,7 +272,13 @@
 			for (var i=0; i<pos1.length; i++) {
 				var p1 = pos1[i];
 				var p2 = pos2[i];
-				out.push({left: lerp(p1.left, p2.left, t), top: lerp(p1.top, p2.top, t), opacity: lerp(p1.opacity, p2.opacity, t)});
+				
+				var rotation = t * (1 - t) * 40;
+				if (p1.movingLeft) rotation *= -1
+				else if (p1.movingRight) rotation *= 1
+				else rotation = 0;
+				
+				out.push({left: lerp(p1.left, p2.left, t), top: lerp(p1.top, p2.top, t), opacity: lerp(p1.opacity, p2.opacity, t), rotation: rotation});
 			}
 			return out;
 		}
@@ -260,9 +290,7 @@
 			})
 		}
 		
-		self.layout = function() {
-			self.updateLetterPositions();
-			
+		self.layout = function() {			
 			var y = window.innerHeight/2 + window.pageYOffset;
 			var pageYs = self.pageCenterYs();
 			var lastPageBefore = 0;
