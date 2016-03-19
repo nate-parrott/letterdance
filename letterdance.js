@@ -1,5 +1,6 @@
 (function() {
 	var FRACTION_OF_SCROLL_THAT_IS_PAGE_TRANSITION = 0.2;
+	var FIXED_TRANSITION_TIME = 0.33;
 	var ORIGINAL_CONTENT_OPACITY = 0;
 	
 	var TEXT_NODE = 3;
@@ -136,9 +137,11 @@
 					cloned.style.display = 'block';
 					cloned.style.left = '0px';
 					cloned.style.top = '0px';
-					setTimeout(function() {
-						cloned.style.transition = 'transform 0.5s ease-in-out, opacity 0.5s ease-in-out'; // wait for initial layout before applying transition
-					}, 0)
+					(function(cloned) {
+						setTimeout(function() {
+							cloned.style.transition = 'transform ' + FIXED_TRANSITION_TIME + 's ease-in-out, opacity ' + FIXED_TRANSITION_TIME + 's ease-in-out'; // wait for initial layout before applying transition
+						}, 0)
+					})(cloned);
 					self.overlay.appendChild(cloned);
 					cloneLetterNodes.push(cloned);
 				}
@@ -246,7 +249,7 @@
 				var x = parseInt(pos.left + nodeOffset.left);
 				var y = parseInt(pos.top + nodeOffset.top);
 				var rotate = pos.rotation || 0;
-				letterClone.style.transform = 'translate3d(' + x + 'px, ' + y + 'px, 0px) rotate(' + rotate + 'deg)';
+				letterClone.style.transform = 'translate(' + x + 'px, ' + y + 'px) rotate(' + rotate + 'deg)';
 				letterClone.style.opacity = pos.opacity;
 				
 			}
@@ -311,6 +314,8 @@
 			var t = (y2 == y1) ? 0 : (y - y1) / (y2 - y1);
 			self.applyLetterPositions(self.interpolateLetterPositions(lastPageBefore, firstPageAfter, t));
 		}
+		
+		DEBUG_LETTERDANCE = self;
 		
 		self.invalidateLayout = function() {
 			delete self.letterPositions;
