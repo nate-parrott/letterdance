@@ -1,3 +1,5 @@
+![letterdance.js](https://raw.githubusercontent.com/nate-parrott/letterdance/master/readme.gif)
+
 # Letterdance
 
 A very rough Javascript library that transitions between multiple pages of content by animating individual letters into their new positions on each page.
